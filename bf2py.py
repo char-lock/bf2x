@@ -1,3 +1,20 @@
+#
+# bf2py - Brainfuck to Python Interpreter
+# Copyright (C) 2022 C. Lockett
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 """ This script allows a user to interpret Brainfuck code into Python.
 It uses no dependencies, so it should be good to go out of the box!
 
@@ -17,11 +34,11 @@ COMMAND_LIST: list[str] = {
 
 def interpret(param_bf: str) -> str:
     """ Returns valid Python code for given Brainfuck code.
-    
+
     #### Parameters
     - param_bf: str
       - Brainfuck code to interpret into Python.
-    
+
     #### Returns
     - str
       - `param_bf` as Python code.
@@ -49,14 +66,17 @@ def interpret(param_bf: str) -> str:
             _current_line += 1
         # Ignore a beginning comment loop.
         elif _processed_chars <= 0 and (_open_brackets > 0 or _c in '[]'):
-            if _c == '[': _open_brackets += 1
-            if _c == ']': _open_brackets -= 1
+            if _c == '[':
+                _open_brackets += 1
+            if _c == ']':
+                _open_brackets -= 1
         # Check for a closing bracket without a matching open one.
         elif _open_brackets <= 0 and _c == ']':
             raise ValueError(f'line {_current_line}, Found \']\' without matching \'[\'.')
         # Only process a character if it's a valid Brainfuck operator.
         # Otherwise, we ignore it like a comment.
-        elif _c in COMMAND_LIST.keys():
+        # TODO: Implement adding comments from Brainfuck to Python.
+        elif _c in COMMAND_LIST.keys(): #pylint: disable=C0201
             _processed_chars += 1
             # Let's handle a handful of special cases first.
             # All we need to do for a closing bracket is lower the indent.
@@ -91,8 +111,29 @@ def interpret(param_bf: str) -> str:
 
 
 if __name__ == '__main__':
-    _py: str = ''
-    with open('/home/charlie/Downloads/helloworld.bf', 'r') as _bf:
-        _py = interpret(''.join(_bf.readlines()))
-    with open('/home/charlie/Downloads/helloworld.py', 'w+') as _cc:
-        _cc.write(_py)
+    from sys import argv
+    if len(argv) != 3:
+        print('\nbf2py v0.0.1 - Brainfuck to Python Interpreter')
+        print('Copyright (c) 2022, C. Lockett <cflockett4@gmail.com>\n')
+        print('This program comes with ABSOLUTELY NO WARRANTY.')
+        print('This is free software, and you are welcome to redistribute it')
+        print('under certain conditions; for details, see the LICENSE file.\n')
+        print('Usage:')
+        print('\tpython bf2py.py <input> <output>\n')
+    else:
+        _input: str = argv[1]
+        _output: str = argv[2]
+        _py: str = ''
+        with open(_input, 'r') as _bf: #pylint: disable=W1514
+            try:
+                _py = interpret(''.join(_bf.readlines()))
+            except ValueError as err:
+                print(f'Brainfuck Syntax Error: {err}')
+                exit()
+            except BaseException as err: #pylint: disable=W0703
+                print(f'Unexpected {type(err)}: {err}')
+                exit()
+        with open(_output, 'w+') as _cc: #pylint: disable=W1514
+            _cc.write(_py)
+        print(f'Success! Run `python {_output}` to run program.')
+        
