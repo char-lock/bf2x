@@ -74,7 +74,7 @@ def interpret(param_bf: str) -> str:
                 if _c == '>':
                     _cmd.append('\n')
                     _cmd.append('    ' * _indent_level)
-                    _cmd.append('if _pointer >= len(_memory): _memory.append(0)')
+                    _cmd.append('while _pointer >= len(_memory): _memory.append(0)')
                 # For a '[', we just need to also increase the indention level.
                 elif _c == '[':
                     _open_brackets += 1
@@ -88,6 +88,7 @@ def interpret(param_bf: str) -> str:
     _python.append('\n')
     # And we're done!
     return '\n'.join(_python)
+
 
 if __name__ == '__main__':
     _py: str = ''
